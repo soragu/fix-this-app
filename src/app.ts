@@ -1,8 +1,13 @@
 import NotesView from "./view";
 import NotesAPI from "./api";
+import { Note } from "./models";
 
 export default class App {
-  constructor(root) {
+  view: NotesView
+  notes: Note[]
+  activeNote: Note | null | undefined
+
+  constructor(root: HTMLElement) {
     this.notes = [];
     this.activeNote = null;
     this.view = new NotesView(root, this._handlers());
@@ -20,21 +25,23 @@ export default class App {
     }
   }
 
-  _setNotes(notes) {
+  _setNotes(notes: Note[]) {
     this.notes = notes;
     this.view.updateNoteList(notes);
     this.view.updateNotePreviewVisibility(notes.length > 0);
   }
 
-  _setActiveNote(note) {
-    this.activeNote = note;
-    this.view.updateActiveNote(note);
+  _setActiveNote(note: Note | undefined) {
+    if (note) {
+      this.activeNote = note;
+      this.view.updateActiveNote(note);
+    }
   }
 
   _handlers() {
     return {
-      onNoteSelect: (noteId) => {
-        const selectedNote = this.notes.find((note) => note.id === noteId);
+      onNoteSelect: (noteId: string) => {
+        const selectedNote = this.notes.find((note: Note) => note.id === parseInt(noteId));
         this._setActiveNote(selectedNote);
       },
       onNoteAdd: () => {
@@ -46,16 +53,16 @@ export default class App {
         NotesAPI.saveNote(newNote);
         this._refreshNotes();
       },
-      onNoteEdit: (title, body) => {
+      onNoteEdit: (title: string, body: string) => {
         NotesAPI.saveNote({
-          id: this.activeNote.id,
+          id: this.activeNote ? this.activeNote.id : null,
           title,
           body,
         });
 
         this._refreshNotes();
       },
-      onNoteDelete: (noteId) => {
+      onNoteDelete: (noteId: number) => {
         NotesAPI.deleteNote(noteId);
         this._refreshNotes();
       },
